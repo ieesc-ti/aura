@@ -1,0 +1,6 @@
+{
+  "name": "Aura Music CRM",
+  "description": "Sistema de inteligência comercial, registro de música, emissão de ISRC, homologação no ECAD, split sheets de coautoria e controle de royalties.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
