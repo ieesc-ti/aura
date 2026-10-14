@@ -39,12 +39,14 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
     { key: 'subscriptions', label: 'Planos & Assinaturas', icon: CreditCard },
     { key: 'users', label: 'Usuários & Equipe', icon: ShieldCheck },
     { key: 'profiles', label: 'Perfis de Acesso', icon: Shield },
+    { key: 'landing-admin', label: 'Gestão da Landing Page', icon: Globe },
     { key: 'reports', label: 'Relatórios & Métricas', icon: BarChart3 },
     { key: 'settings', label: 'Configurações', icon: Settings },
   ];
 
   const allowedItems = navItems.filter((item) =>
-    currentUser?.permissions?.allowedTabs?.includes(item.key)
+    currentUser?.permissions?.allowedTabs?.includes(item.key) ||
+    ((currentUser?.role === 'admin' || currentUser?.role === 'manager') && item.key === 'landing-admin')
   );
 
   return (

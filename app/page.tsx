@@ -17,6 +17,7 @@ import { ReportsView } from '@/components/ReportsView';
 import { SettingsView } from '@/components/SettingsView';
 import { UsersManagementView } from '@/components/UsersManagementView';
 import { ProfileManagementView } from '@/components/ProfileManagementView';
+import { LandingPageAdminView } from '@/components/LandingPageAdminView';
 import { MusicLandingPage } from '@/components/MusicLandingPage';
 
 // Modals
@@ -29,6 +30,7 @@ import { LoginModal } from '@/components/LoginModal';
 import { CertificateModal } from '@/components/CertificateModal';
 import { UserManagementModal } from '@/components/UserManagementModal';
 import { ProfileManagementModal } from '@/components/ProfileManagementModal';
+import { NewQuoteModal } from '@/components/NewQuoteModal';
 
 function AppContent() {
   const { currentView, activeTab } = useCRM();
@@ -41,6 +43,7 @@ function AppContent() {
         <MusicLandingPage />
         <LoginModal />
         <CertificateModal />
+        <NewQuoteModal />
       </>
     );
   }
@@ -69,6 +72,7 @@ function AppContent() {
           {activeTab === 'subscriptions' && <SubscriptionsView />}
           {activeTab === 'users' && <UsersManagementView />}
           {activeTab === 'profiles' && <ProfileManagementView />}
+          {activeTab === 'landing-admin' && <LandingPageAdminView />}
           {activeTab === 'reports' && <ReportsView />}
           {activeTab === 'settings' && <SettingsView />}
         </main>
@@ -84,6 +88,7 @@ function AppContent() {
       <CertificateModal />
       <UserManagementModal />
       <ProfileManagementModal />
+      <NewQuoteModal />
     </div>
   );
 }

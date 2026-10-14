@@ -168,9 +168,108 @@ export function UsersManagementView() {
         </select>
       </div>
 
-      {/* Users Table */}
+      {/* Users List: Mobile Cards + Desktop Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {filteredUsers.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              Nenhum usuário encontrado com os filtros aplicados.
+            </div>
+          ) : (
+            filteredUsers.map((u) => {
+              const profile = accessProfiles.find((p) => p.id === u.profileId);
+              const roleDef = ROLE_DEFINITIONS[u.role] || { label: u.role, badgeColor: 'bg-slate-100 text-slate-700' };
+
+              return (
+                <div key={u.id} className="p-4 space-y-3 hover:bg-slate-50/50 transition">
+                  {/* Top: Avatar, Name, Email and Status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
+                        {u.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-bold text-slate-900 text-sm truncate">{u.name}</p>
+                          {currentUser.id === u.id && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded-md font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              Você
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 flex items-center gap-1 truncate">
+                          <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{u.email}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                        u.active
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-slate-100 text-slate-500 border border-slate-200'
+                      }`}
+                    >
+                      {u.active ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                      {u.active ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+
+                  {/* Middle: Role & RBAC Profile */}
+                  <div className="bg-slate-50/80 rounded-xl p-2.5 flex items-center justify-between text-xs gap-2">
+                    <div className="min-w-0">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Papel</span>
+                      <span className={`inline-block px-2 py-0.5 mt-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${roleDef.badgeColor}`}>
+                        {roleDef.label}
+                      </span>
+                    </div>
+
+                    <div className="text-right min-w-0">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Perfil RBAC</span>
+                      <p className="font-semibold text-slate-800 text-[11px] truncate">{profile?.name || 'Padrão'}</p>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Allowed tabs count and Actions */}
+                  <div className="flex items-center justify-between pt-1 text-xs">
+                    <span className="text-[11px] text-slate-400">
+                      {(u.permissions?.allowedTabs || []).length} abas autorizadas
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openEditModal(u)}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+
+                      {users.length > 1 && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`Deseja realmente remover o usuário ${u.name}?`)) {
+                              deleteUser(u.id);
+                            }
+                          }}
+                          className="p-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-400 rounded-lg transition cursor-pointer"
+                          title="Excluir Usuário"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200 text-[10px]">
               <tr>
@@ -190,13 +289,13 @@ export function UsersManagementView() {
                   <tr key={u.id} className="hover:bg-slate-50/70 transition">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
                           {u.name.slice(0, 2).toUpperCase()}
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900 text-sm">{u.name}</p>
-                          <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                            <Mail className="w-3 h-3 text-slate-400" />
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 text-sm truncate">{u.name}</p>
+                          <p className="text-[11px] text-slate-400 flex items-center gap-1 truncate">
+                            <Mail className="w-3 h-3 text-slate-400 shrink-0" />
                             <span>{u.email}</span>
                           </p>
                         </div>
@@ -204,7 +303,7 @@ export function UsersManagementView() {
                     </td>
 
                     <td className="px-5 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${roleDef.badgeColor}`}>
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border whitespace-nowrap ${roleDef.badgeColor}`}>
                         {roleDef.label}
                       </span>
                     </td>
@@ -218,7 +317,7 @@ export function UsersManagementView() {
 
                     <td className="px-5 py-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
                           u.active
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : 'bg-slate-100 text-slate-500 border border-slate-200'

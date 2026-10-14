@@ -115,9 +115,67 @@ export function ExpensesView() {
         </div>
       </div>
 
-      {/* Expenses Table */}
+      {/* Expenses List: Mobile Cards + Desktop Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {expenses.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              Nenhuma despesa registrada.
+            </div>
+          ) : (
+            expenses.map((exp) => (
+              <div key={exp.id} className="p-4 space-y-3 hover:bg-slate-50/50 transition">
+                {/* Header: Title & Status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-900 text-sm">{exp.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{exp.artistOrProject}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                      exp.status === 'Pago'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}
+                  >
+                    {exp.status}
+                  </span>
+                </div>
+
+                {/* Category & Date badge */}
+                <div className="flex items-center justify-between text-xs gap-2">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 whitespace-nowrap">
+                    {exp.category}
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-medium">{exp.date}</span>
+                </div>
+
+                {/* Footer: Value & Action */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Valor</span>
+                    <span className="text-base font-black text-slate-900">
+                      R$ {exp.amount.toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => deleteExpense(exp.id)}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 transition cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+                    title="Excluir Despesa"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Excluir</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200 text-[10px]">
               <tr>
@@ -135,18 +193,18 @@ export function ExpensesView() {
                 <tr key={exp.id} className="hover:bg-slate-50/70 transition">
                   <td className="px-5 py-3.5 font-bold text-slate-900">{exp.title}</td>
                   <td className="px-5 py-3.5">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 whitespace-nowrap">
                       {exp.category}
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-slate-600 font-medium">{exp.artistOrProject}</td>
-                  <td className="px-5 py-3.5 text-slate-400">{exp.date}</td>
-                  <td className="px-5 py-3.5 font-black text-slate-900">
+                  <td className="px-5 py-3.5 text-slate-400 whitespace-nowrap">{exp.date}</td>
+                  <td className="px-5 py-3.5 font-black text-slate-900 whitespace-nowrap">
                     R$ {exp.amount.toLocaleString('pt-BR')}
                   </td>
                   <td className="px-5 py-3.5">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${
                         exp.status === 'Pago'
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -158,7 +216,8 @@ export function ExpensesView() {
                   <td className="px-5 py-3.5 text-right">
                     <button
                       onClick={() => deleteExpense(exp.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                      title="Excluir Despesa"
+                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 transition cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

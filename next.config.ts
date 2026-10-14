@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     config.resolve.alias['@'] = path.resolve(__dirname);
     return config;
   },
+  output: 'standalone',
   images: {
     remotePatterns: [
       {

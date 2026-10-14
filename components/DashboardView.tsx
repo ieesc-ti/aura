@@ -158,18 +158,9 @@ export function DashboardView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left (2 cols): Deals in negotiation */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Negócios Recentes</h2>
-              <p className="text-xs text-slate-500">Oportunidades em aberto no pipeline comercial</p>
-            </div>
-            <button
-              onClick={() => setActiveTab('pipeline')}
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 cursor-pointer"
-            >
-              <span>Ver Kanban</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base font-bold text-slate-900">Negócios Recentes</h2>
+            <p className="text-xs text-slate-500">Oportunidades em aberto no pipeline comercial</p>
           </div>
 
           <div className="divide-y divide-slate-100">
@@ -177,25 +168,25 @@ export function DashboardView() {
               <div
                 key={deal.id}
                 onClick={() => setActiveTab('pipeline')}
-                className="py-3.5 flex items-center justify-between hover:bg-slate-50/80 px-2 rounded-xl transition cursor-pointer"
+                className="py-3 px-2 rounded-xl hover:bg-slate-50/80 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0">
                     {deal.organization.slice(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900">{deal.name}</h3>
-                    <p className="text-xs text-slate-500">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-bold text-slate-900 truncate">{deal.name}</h3>
+                    <p className="text-xs text-slate-500 truncate">
                       {deal.organization} • {deal.contactName}
                     </p>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <p className="text-sm font-black text-slate-900">
+                <div className="flex items-center sm:flex-col sm:items-end justify-between sm:justify-center shrink-0 pl-13 sm:pl-0 gap-2 sm:gap-1">
+                  <p className="text-sm font-black text-slate-900 tabular-nums">
                     R$ {deal.value.toLocaleString('pt-BR')}
                   </p>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 whitespace-nowrap">
                     {deal.stage}
                   </span>
                 </div>
@@ -227,18 +218,18 @@ export function DashboardView() {
                 onClick={() => setActiveTab('music-registration')}
                 className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 hover:border-purple-300 transition cursor-pointer"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="text-xs font-bold text-slate-900 truncate max-w-[160px]">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <h4 className="text-xs font-bold text-slate-900 truncate min-w-0 flex-1">
                     {reg.title}
                   </h4>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 whitespace-nowrap shrink-0">
                     {reg.status}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500">{reg.artistName}</p>
+                <p className="text-[11px] text-slate-500 truncate">{reg.artistName}</p>
                 <div className="mt-2 text-[10px] text-slate-400 font-mono flex items-center justify-between">
-                  <span>ISRC: {reg.isrcCode || 'Aguardando'}</span>
-                  <span>{reg.splits?.length || 0} cotitulares</span>
+                  <span className="truncate">ISRC: {reg.isrcCode || 'Aguardando'}</span>
+                  <span className="shrink-0">{reg.splits?.length || 0} cotitulares</span>
                 </div>
               </div>
             ))}

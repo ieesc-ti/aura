@@ -172,9 +172,110 @@ export function MusicRegistrationView() {
         </select>
       </div>
 
-      {/* Registrations Table / Card List */}
+      {/* Registrations List: Mobile Cards + Desktop Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {filteredRegistrations.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              Nenhuma música encontrada com os filtros selecionados.
+            </div>
+          ) : (
+            filteredRegistrations.map((reg, regIdx) => (
+              <div key={reg.id || `reg-mob-${regIdx}`} className="p-4 space-y-3 hover:bg-slate-50/50 transition">
+                {/* Header: Title, Type/Year & Status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                      <Music2 className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-slate-900 text-sm truncate">{reg.title}</p>
+                      <p className="text-[11px] text-slate-400 truncate">
+                        {reg.artistName} • {reg.genre}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap ${
+                      reg.status === 'Homologado ECAD'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : reg.status === 'ISRC Emitido'
+                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}
+                  >
+                    {reg.status === 'Homologado ECAD' && <CheckCircle className="w-3 h-3 text-emerald-600" />}
+                    {reg.status}
+                  </span>
+                </div>
+
+                {/* ISRC Code & Split Sheet Bar */}
+                <div className="bg-slate-50/80 rounded-xl p-3 flex items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Código ISRC</span>
+                    {reg.isrcCode ? (
+                      <span className="inline-block mt-0.5 bg-white text-indigo-700 px-2 py-0.5 rounded-md text-xs font-mono font-bold border border-slate-200 whitespace-nowrap shadow-xs">
+                        {reg.isrcCode}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">Pendente</span>
+                    )}
+                  </div>
+
+                  <div className="text-right min-w-0 flex-1">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Split Sheet</span>
+                    <div className="space-y-0.5 mt-0.5">
+                      {(reg.splits || []).slice(0, 2).map((sp, sIdx) => (
+                        <p key={sp.id || `split-mob-${reg.id || regIdx}-${sIdx}`} className="text-[11px] text-slate-600 truncate">
+                          <span className="font-semibold text-slate-800">{sp.name.split(' ')[0]}:</span> {sp.percentage}%
+                        </p>
+                      ))}
+                      {(reg.splits?.length || 0) > 2 && (
+                        <p className="text-[10px] text-indigo-600 font-semibold">
+                          +{(reg.splits?.length || 0) - 2} outros autores
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Metadata & Actions */}
+                <div className="flex items-center justify-between pt-1 gap-2">
+                  <span className="text-[11px] text-slate-400 font-medium truncate">
+                    {reg.type} • {reg.releaseYear} • {Math.floor((reg.durationSeconds || 180) / 60)}:
+                    {String((reg.durationSeconds || 180) % 60).padStart(2, '0')} min
+                  </span>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => openCertificateModal(reg)}
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer"
+                      title="Ver Certificado Oficial"
+                    >
+                      <Award className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Certificado</span>
+                    </button>
+
+                    {reg.status !== 'Homologado ECAD' && (
+                      <button
+                        onClick={() => issueIsrc(reg.id)}
+                        className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap"
+                      >
+                        <FileCheck2 className="w-3.5 h-3.5" />
+                        <span>Homologar</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-bold border-b border-slate-200 text-[10px]">
               <tr>
@@ -194,8 +295,8 @@ export function MusicRegistrationView() {
                       <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">
                         <Music2 className="w-4 h-4" />
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{reg.title}</p>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 text-sm truncate">{reg.title}</p>
                         <p className="text-[11px] text-slate-400">
                           {reg.type} • {reg.releaseYear} • {Math.floor((reg.durationSeconds || 180) / 60)}:
                           {String((reg.durationSeconds || 180) % 60).padStart(2, '0')} min
@@ -209,9 +310,9 @@ export function MusicRegistrationView() {
                     <p className="text-[11px] text-slate-400">{reg.genre}</p>
                   </td>
 
-                  <td className="px-5 py-4 font-mono font-bold text-slate-700">
+                  <td className="px-5 py-4 font-mono font-bold text-slate-700 whitespace-nowrap">
                     {reg.isrcCode ? (
-                      <span className="bg-slate-100 text-indigo-700 px-2 py-1 rounded-md text-xs border border-slate-200">
+                      <span className="bg-slate-100 text-indigo-700 px-2 py-1 rounded-md text-xs border border-slate-200 whitespace-nowrap inline-block">
                         {reg.isrcCode}
                       </span>
                     ) : (
@@ -237,7 +338,7 @@ export function MusicRegistrationView() {
 
                   <td className="px-5 py-4">
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap ${
                         reg.status === 'Homologado ECAD'
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : reg.status === 'ISRC Emitido'
@@ -254,7 +355,7 @@ export function MusicRegistrationView() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openCertificateModal(reg)}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer"
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap"
                         title="Ver Certificado Oficial"
                       >
                         <Award className="w-3.5 h-3.5 text-amber-500" />
@@ -264,7 +365,7 @@ export function MusicRegistrationView() {
                       {reg.status !== 'Homologado ECAD' && (
                         <button
                           onClick={() => issueIsrc(reg.id)}
-                          className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1 cursor-pointer whitespace-nowrap"
                         >
                           <FileCheck2 className="w-3.5 h-3.5" />
                           <span>Homologar</span>

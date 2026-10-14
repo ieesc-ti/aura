@@ -90,12 +90,17 @@ export function CertificateModal() {
                 Cotitulares & Split Sheet Registrada
               </span>
               <div className="space-y-1">
-                {(selectedCertificateReg.splits || []).map((s) => (
-                  <div key={s.id} className="flex justify-between text-[11px] py-0.5 border-b border-slate-100">
-                    <span className="text-slate-700 font-medium">{s.name} ({s.role})</span>
-                    <span className="font-bold text-slate-900">{s.percentage}%</span>
-                  </div>
-                ))}
+                {(selectedCertificateReg.splits || []).map((s, idx) => {
+                  const splitKey = s.id || `cert-split-${selectedCertificateReg.id || 'reg'}-${idx}-${s.name || 'author'}`;
+                  return (
+                    <div key={splitKey} className="flex justify-between text-[11px] py-0.5 border-b border-slate-100">
+                      <span className="text-slate-700 font-medium">
+                        {s.name} {s.role ? `(${s.role})` : ''}
+                      </span>
+                      <span className="font-bold text-slate-900">{s.percentage}%</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

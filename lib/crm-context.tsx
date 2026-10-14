@@ -13,6 +13,8 @@ import {
   Expense,
   MusicRegistration,
   ClientSubscription,
+  LandingPageConfig,
+  LandingPlan,
 } from './types';
 import {
   INITIAL_DEALS,
@@ -24,6 +26,7 @@ import {
   INITIAL_SUBSCRIPTIONS,
 } from './mock-data';
 import { INITIAL_USERS, INITIAL_ACCESS_PROFILES, DEFAULT_ROLE_PERMISSIONS } from './user-presets';
+import { DEFAULT_LANDING_CONFIG } from './landing-data';
 import { SupabaseService } from './supabaseService';
 import { getSupabaseConfig } from './supabase';
 
@@ -92,6 +95,18 @@ interface CRMContextType {
   setIsProfileManagementOpen: (open: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  landingConfig: LandingPageConfig;
+  updateLandingConfig: (cfg: Partial<LandingPageConfig>) => void;
+  landingPlans: LandingPlan[];
+  saveLandingPlan: (plan: Partial<LandingPlan> & { id?: string }) => void;
+  deleteLandingPlan: (planId: string) => void;
+  landingTheme: 'light' | 'dark';
+  setLandingTheme: (theme: 'light' | 'dark') => void;
+  toggleLandingTheme: () => void;
+  resetLandingConfigToDefault: () => void;
+  isQuoteModalOpen: boolean;
+  setIsQuoteModalOpen: (open: boolean) => void;
+  requestQuote: (data: { name: string; email: string; phone: string; service: string; notes?: string }) => void;
 }
 
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
@@ -128,6 +143,11 @@ export function CRMProvider({ children }: { children: ReactNode }) {
   const [selectedCertificateReg, setSelectedCertificateReg] = useState<MusicRegistration | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Landing Page dynamic config & theme
+  const [landingConfig, setLandingConfig] = useState<LandingPageConfig>(DEFAULT_LANDING_CONFIG);
+  const [landingTheme, setLandingTheme] = useState<'light' | 'dark'>('light');
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+
   // Load from local storage and sync with Supabase
   useEffect(() => {
     try {
@@ -140,6 +160,19 @@ export function CRMProvider({ children }: { children: ReactNode }) {
         if (parsed.expenses) setExpenses(parsed.expenses);
         if (parsed.musicRegistrations) setMusicRegistrations(parsed.musicRegistrations);
         if (parsed.subscriptions) setSubscriptions(parsed.subscriptions);
+      }
+      const storedLanding = localStorage.getItem('aura_landing_config_v1');
+      if (storedLanding) {
+        try {
+          const parsedCfg = JSON.parse(storedLanding);
+          if (parsedCfg && parsedCfg.plans) {
+            setLandingConfig(parsedCfg);
+          }
+        } catch {}
+      }
+      const storedTheme = localStorage.getItem('aura_landing_theme');
+      if (storedTheme === 'dark' || storedTheme === 'light') {
+        setLandingTheme(storedTheme);
       }
       const savedUserStr = localStorage.getItem('aura_current_user');
       if (savedUserStr) {
@@ -469,6 +502,112 @@ export function CRMProvider({ children }: { children: ReactNode }) {
     setSubscriptions((prev) => [newSub, ...prev]);
   };
 
+  const updateLandingConfig = (cfg: Partial<LandingPageConfig>) => {
+    setLandingConfig((prev) => {
+      const updated = { ...prev, ...cfg };
+      try {
+        localStorage.setItem('aura_landing_config_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const landingPlans = useMemo(() => {
+    return landingConfig.plans || DEFAULT_LANDING_CONFIG.plans;
+  }, [landingConfig.plans]);
+
+  const saveLandingPlan = (planData: Partial<LandingPlan> & { id?: string }) => {
+    setLandingConfig((prev) => {
+      let updatedPlans: LandingPlan[];
+      const existingIdx = prev.plans.findIndex((p) => p.id === planData.id);
+      if (existingIdx >= 0) {
+        updatedPlans = prev.plans.map((p, idx) =>
+          idx === existingIdx ? ({ ...p, ...planData } as LandingPlan) : p
+        );
+      } else {
+        const newPlan: LandingPlan = {
+          id: planData.id || `plan-${Date.now()}`,
+          name: planData.name || 'Novo Plano',
+          tagline: planData.tagline || '',
+          price: Number(planData.price || 0),
+          period: planData.period || '/mês',
+          description: planData.description || '',
+          features: planData.features || ['ISRCs Inclusos', 'Split Sheet Oficial'],
+          popular: planData.popular || false,
+          popularBadge: planData.popularBadge || 'POPULAR',
+          buttonText: planData.buttonText || 'Contratar Plano',
+          buttonVariant: planData.buttonVariant || 'outline',
+          active: planData.active !== false,
+        };
+        updatedPlans = [...prev.plans, newPlan];
+      }
+      const updated = { ...prev, plans: updatedPlans };
+      try {
+        localStorage.setItem('aura_landing_config_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const deleteLandingPlan = (planId: string) => {
+    setLandingConfig((prev) => {
+      const updated = {
+        ...prev,
+        plans: prev.plans.filter((p) => p.id !== planId),
+      };
+      try {
+        localStorage.setItem('aura_landing_config_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const toggleLandingTheme = () => {
+    setLandingTheme((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      try {
+        localStorage.setItem('aura_landing_theme', next);
+      } catch {}
+      return next;
+    });
+  };
+
+  const resetLandingConfigToDefault = () => {
+    setLandingConfig(DEFAULT_LANDING_CONFIG);
+    try {
+      localStorage.removeItem('aura_landing_config_v1');
+    } catch {}
+  };
+
+  const requestQuote = (data: { name: string; email: string; phone: string; service: string; notes?: string }) => {
+    addDeal({
+      name: `Cotação: ${data.service} - ${data.name}`,
+      organization: data.name,
+      value: 12000,
+      stage: 'Prospecção & Lead',
+      priority: 'Alta',
+      probability: 60,
+      closeDate: '15 dias',
+      ownerName: currentUser.name || 'Comercial',
+      contactName: data.name,
+      contactEmail: data.email,
+      contactPhone: data.phone,
+      tags: ['Landing Page', 'Cotação Online', data.service],
+      notes: data.notes || `Solicitação via Landing Page para: ${data.service}`,
+    });
+    addContact({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      role: 'Cliente / Solicitante',
+      organization: data.name,
+      dealCount: 1,
+      totalValue: 12000,
+      status: 'Lead Quente',
+    });
+    setIsQuoteModalOpen(false);
+  };
+
   const openCertificateModal = (reg: MusicRegistration) => {
     setSelectedCertificateReg(reg);
   };
@@ -546,6 +685,18 @@ export function CRMProvider({ children }: { children: ReactNode }) {
         setIsProfileManagementOpen,
         searchQuery,
         setSearchQuery,
+        landingConfig,
+        updateLandingConfig,
+        landingPlans,
+        saveLandingPlan,
+        deleteLandingPlan,
+        landingTheme,
+        setLandingTheme,
+        toggleLandingTheme,
+        resetLandingConfigToDefault,
+        isQuoteModalOpen,
+        setIsQuoteModalOpen,
+        requestQuote,
       }}
     >
       {children}

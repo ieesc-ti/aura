@@ -25,6 +25,8 @@ import {
   ShieldCheck,
   Eye,
   EyeOff,
+  Globe,
+  ExternalLink,
 } from 'lucide-react';
 
 export function SettingsView() {
@@ -36,6 +38,8 @@ export function SettingsView() {
     deleteUser,
     saveAccessProfile,
     deleteAccessProfile,
+    setActiveTab: setCrmTab,
+    goToLandingPage,
   } = useCRM();
 
   const [activeTab, setActiveTab] = useState<'profile' | 'users-profiles' | 'supabase'>('profile');
@@ -287,6 +291,43 @@ export function SettingsView() {
                 ))}
               </div>
             </div>
+
+            {/* Quick Landing Page link card */}
+            <div className="border-t border-slate-100 pt-4">
+              <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-indigo-950">
+                      Gestão Dinâmica da Landing Page
+                    </h4>
+                    <p className="text-[11px] text-indigo-700/80">
+                      Edite textos, serviços, etapas, planos e perguntas da página pública.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCrmTab('landing-admin')}
+                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+                  >
+                    Gerenciar Landing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goToLandingPage}
+                    className="p-1.5 border border-indigo-200 hover:bg-indigo-100/60 rounded-xl text-indigo-700 transition cursor-pointer"
+                    title="Abrir Landing Page pública"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -373,60 +414,45 @@ export function SettingsView() {
                   </div>
                 </div>
 
-                {/* Users Table */}
-                <div className="overflow-x-auto border border-slate-200 rounded-2xl">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
-                      <tr>
-                        <th className="px-4 py-3">Usuário</th>
-                        <th className="px-4 py-3">Papel & Perfil</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3 text-right">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {filteredUsers.map((u) => {
+                {/* Users List: Mobile Cards + Desktop Table */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  {/* Mobile View: Cards (identical structure to Planos & Assinantes) */}
+                  <div className="block md:hidden divide-y divide-slate-100 bg-white">
+                    {filteredUsers.length === 0 ? (
+                      <div className="p-8 text-center text-xs text-slate-400">
+                        Nenhum usuário encontrado.
+                      </div>
+                    ) : (
+                      filteredUsers.map((u) => {
                         const profileObj = accessProfiles.find((p) => p.id === u.profileId);
                         const isCurrent = u.id === currentUser?.id;
+                        const roleDef = ROLE_DEFINITIONS[u.role] || { label: u.role, badgeColor: 'bg-slate-100 text-slate-700' };
+
                         return (
-                          <tr key={u.id} className="hover:bg-slate-50/70 transition">
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 border border-indigo-100">
+                          <div key={u.id} className="p-4 space-y-3 hover:bg-slate-50/50 transition">
+                            {/* Header: Name & Status */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 border border-indigo-100">
                                   {u.name.slice(0, 2).toUpperCase()}
                                 </div>
-                                <div>
-                                  <p className="font-bold text-slate-900 flex items-center gap-1.5">
-                                    <span>{u.name}</span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-bold text-slate-900 text-sm truncate flex items-center gap-1.5">
+                                    <span className="truncate">{u.name}</span>
                                     {isCurrent && (
-                                      <span className="text-[10px] px-1.5 py-0.2 bg-indigo-100 text-indigo-800 rounded font-semibold">
+                                      <span className="text-[10px] px-1.5 py-0.2 bg-indigo-100 text-indigo-800 rounded font-semibold shrink-0">
                                         Você
                                       </span>
                                     )}
                                   </p>
-                                  <p className="text-[11px] text-slate-400">{u.email}</p>
+                                  <p className="text-[11px] text-slate-400 truncate">{u.email}</p>
                                 </div>
                               </div>
-                            </td>
 
-                            <td className="px-4 py-3">
-                              <div className="flex flex-col gap-1 items-start">
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${ROLE_DEFINITIONS[u.role]?.badgeColor || 'bg-slate-100 text-slate-700'}`}>
-                                  {ROLE_DEFINITIONS[u.role]?.label || u.role}
-                                </span>
-                                {profileObj && (
-                                  <span className="text-[10px] text-slate-500">
-                                    Perfil: <strong className="text-slate-700">{profileObj.name}</strong>
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-
-                            <td className="px-4 py-3">
                               <button
                                 type="button"
                                 onClick={() => handleToggleUserStatus(u)}
-                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition cursor-pointer flex items-center gap-1.5 ${
+                                className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
                                   u.active
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                                     : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
@@ -435,10 +461,32 @@ export function SettingsView() {
                                 <span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                                 <span>{u.active ? 'Ativo' : 'Inativo'}</span>
                               </button>
-                            </td>
+                            </div>
 
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
+                            {/* Middle Gray Box: Role (left) & RBAC Profile (right) */}
+                            <div className="bg-slate-50/80 rounded-xl p-3 flex items-center justify-between gap-2">
+                              <div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Papel</span>
+                                <span className={`inline-block mt-0.5 px-2.5 py-0.5 rounded-full text-xs font-bold border whitespace-nowrap ${roleDef.badgeColor}`}>
+                                  {roleDef.label}
+                                </span>
+                              </div>
+
+                              <div className="text-right min-w-0 flex-1">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Perfil RBAC</span>
+                                <p className="font-bold text-slate-800 text-xs mt-0.5 truncate">
+                                  {profileObj?.name || 'Padrão'}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Footer: Allowed tabs count & Action buttons */}
+                            <div className="flex items-center justify-between text-xs text-slate-500 pt-0.5">
+                              <span className="text-[11px]">
+                                {(u.permissions?.allowedTabs || []).length} abas autorizadas
+                              </span>
+
+                              <div className="flex items-center gap-1.5">
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditUser(u)}
@@ -457,12 +505,104 @@ export function SettingsView() {
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
-                            </td>
-                          </tr>
+                            </div>
+                          </div>
                         );
-                      })}
-                    </tbody>
-                  </table>
+                      })
+                    )}
+                  </div>
+
+                  {/* Desktop View: Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                        <tr>
+                          <th className="px-4 py-3">Usuário</th>
+                          <th className="px-4 py-3">Papel & Perfil</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3 text-right">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredUsers.map((u) => {
+                          const profileObj = accessProfiles.find((p) => p.id === u.profileId);
+                          const isCurrent = u.id === currentUser?.id;
+                          return (
+                            <tr key={u.id} className="hover:bg-slate-50/70 transition">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 border border-indigo-100">
+                                    {u.name.slice(0, 2).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <p className="font-bold text-slate-900 flex items-center gap-1.5">
+                                      <span>{u.name}</span>
+                                      {isCurrent && (
+                                        <span className="text-[10px] px-1.5 py-0.2 bg-indigo-100 text-indigo-800 rounded font-semibold">
+                                          Você
+                                        </span>
+                                      )}
+                                    </p>
+                                    <p className="text-[11px] text-slate-400">{u.email}</p>
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="px-4 py-3">
+                                <div className="flex flex-col gap-1 items-start">
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border whitespace-nowrap ${ROLE_DEFINITIONS[u.role]?.badgeColor || 'bg-slate-100 text-slate-700'}`}>
+                                    {ROLE_DEFINITIONS[u.role]?.label || u.role}
+                                  </span>
+                                  {profileObj && (
+                                    <span className="text-[10px] text-slate-500 whitespace-nowrap">
+                                      Perfil: <strong className="text-slate-700">{profileObj.name}</strong>
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td className="px-4 py-3">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleUserStatus(u)}
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                                    u.active
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                      : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                                  }`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                  <span>{u.active ? 'Ativo' : 'Inativo'}</span>
+                                </button>
+                              </td>
+
+                              <td className="px-4 py-3 text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditUser(u)}
+                                    title="Editar Usuário"
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 transition cursor-pointer"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeleteConfirmId({ type: 'user', id: u.id, name: u.name })}
+                                    disabled={isCurrent}
+                                    title={isCurrent ? 'Você não pode excluir sua própria conta' : 'Excluir Usuário'}
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}

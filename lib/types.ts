@@ -18,6 +18,7 @@ export type TabKey =
   | 'subscriptions'
   | 'users'
   | 'profiles'
+  | 'landing-admin'
   | 'deal-details'
   | 'reports'
   | 'settings';
@@ -130,7 +131,7 @@ export interface ClientSubscription {
   id: string;
   clientName: string;
   email: string;
-  planName: 'Básico Artista' | 'Pro Distribuição' | 'Selo Enterprise';
+  planName: 'Básico Artista' | 'Pro Distribuição' | 'Selo Enterprise' | string;
   status: 'Ativa' | 'Atrasada' | 'Cancelada';
   monthlyValue: number;
   nextBillingDate: string;
@@ -176,3 +177,81 @@ export interface TeamMember {
   wonValue: number;
   avatar?: string;
 }
+
+export interface LandingPlan {
+  id: string;
+  name: string;
+  tagline: string;
+  price: number;
+  period: string; // e.g. "/mês"
+  description: string;
+  features: string[];
+  popular?: boolean;
+  popularBadge?: string;
+  buttonText: string;
+  buttonVariant?: 'primary' | 'outline';
+  active: boolean;
+}
+
+export interface LandingFaq {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface LandingMetric {
+  id: string;
+  value: string;
+  label: string;
+}
+
+export interface LandingService {
+  id: string;
+  number: string;
+  title: string;
+  description: string;
+  linkText: string;
+  iconName: string;
+}
+
+export interface LandingStep {
+  id: string;
+  step: string;
+  title: string;
+  description: string;
+}
+
+export interface LandingPageConfig {
+  heroBadge: string;
+  heroTitle: string;
+  heroHighlight: string;
+  heroSubtitle: string;
+  heroCtaPrimary: string;
+  heroCtaSecondary: string;
+  heroTrack: {
+    title: string;
+    album: string;
+    artist: string;
+    isrc: string;
+    iswc: string;
+    status: string;
+    splits: { label: string; percentage: number; color: string }[];
+    royaltiesTracked: number;
+  };
+  metrics: LandingMetric[];
+  servicesTitle: string;
+  servicesSubtitle: string;
+  services: LandingService[];
+  stepsTitle: string;
+  stepsSubtitle: string;
+  steps: LandingStep[];
+  plansTitle: string;
+  plansSubtitle: string;
+  plans: LandingPlan[];
+  faqsTitle: string;
+  faqs: LandingFaq[];
+  ctaTitle: string;
+  ctaSubtitle: string;
+  theme: 'light' | 'dark';
+}
+
